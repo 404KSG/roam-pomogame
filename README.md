@@ -15,10 +15,10 @@ My secret weapon against procrastination inside Roam Research. PomoGame is a min
 
 - **Always on Top**
     The timer is fixed to the top bar, so it never disappears when you scroll.
-<img width="800" height="1676" alt="9766c99b503548e842e560bd3e9c6ed7" src="https://github.com/user-attachments/assets/534b2f91-ce78-4957-84e8-7c7a5d27f753" />
-<img width="800" height="896" alt="144493810c3b57538ba2619a2968ac21" src="https://github.com/user-attachments/assets/5be7aff6-47ce-4153-8aef-f313d1641fc2" />
-<img width="800" height="1574" alt="39c85ca79350007544c05979330959d1" src="https://github.com/user-attachments/assets/345e297e-895b-4007-856a-3238e23a3ef4" />
-<img width="800" height="1706" alt="6fd8d65d2236611bd4143d0054721ce4" src="https://github.com/user-attachments/assets/aaa7e801-488f-4b47-919f-df1a4daad490" />
+<img width="200" height="1676" alt="9766c99b503548e842e560bd3e9c6ed7" src="https://github.com/user-attachments/assets/534b2f91-ce78-4957-84e8-7c7a5d27f753" />
+<img width="200" height="896" alt="144493810c3b57538ba2619a2968ac21" src="https://github.com/user-attachments/assets/5be7aff6-47ce-4153-8aef-f313d1641fc2" />
+<img width="200" height="1574" alt="39c85ca79350007544c05979330959d1" src="https://github.com/user-attachments/assets/345e297e-895b-4007-856a-3238e23a3ef4" />
+<img width="200" height="1706" alt="6fd8d65d2236611bd4143d0054721ce4" src="https://github.com/user-attachments/assets/aaa7e801-488f-4b47-919f-df1a4daad490" />
 
 ## How to Use
 1.  Install the extension from the Roam Depot.
