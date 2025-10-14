@@ -12,10 +12,6 @@ It's built on a simple loop: turn your focus into a currency, then risk it for g
 * **Roll the Dice:** Risk your coins on a high-stakes 1d8 dice roll with symmetrical multipliers from **-4x** to **+4x**. Your rank can rise or fall with a single roll.
 * **Track Your Luck:** Analyze your performance with a "stock chart" style trend graph of all your rolls.
 
-### Why PomoGame?
-
-The timer is **always visible** in your top bar, unlike the native Roam Pomodoro which disappears when you scroll. It's a simple fix that makes a huge difference.
-
 ### Controls
 
 * **Left Click:** Start Timer
