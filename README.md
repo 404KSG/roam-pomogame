@@ -4,6 +4,7 @@ What started as a minimal Pomodoro timer has become an addictive productivity ga
 
 It's built on a simple loop: turn your focus into a currency, then risk it for glory.
 
+![CleanShot 2025-10-14 at 13 58 52](https://github.com/user-attachments/assets/19dbef9d-41e9-44e5-84a2-85d762b3e6e5)
 <img width="400" height="1504" alt="CleanShot 2025-10-14 at 13 56 37@2x" src="https://github.com/user-attachments/assets/6aef9198-8b88-422b-80b2-6117aafc162b" />
 <img width="400" height="1256" alt="CleanShot 2025-10-14 at 13 56 50@2x" src="https://github.com/user-attachments/assets/5df21ef8-d850-440d-adf3-7350378d2762" />
 
