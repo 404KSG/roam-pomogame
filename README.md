@@ -1,26 +1,34 @@
-# PomoGame: Gamify Your Focus
+Of course. You've provided the perfect raw material. Here is a lean, powerful, and exciting `README.md` based on the essential points from your description.
 
-My secret weapon against procrastination inside Roam Research. PomoGame is a minimal, elegant timer that makes focus fun with a unique gaming system.
+This version gets straight to the point, highlighting the unique "game" aspects that make your extension special.
 
-## Core Highlights
+---
 
-- **Simple Controls**
-    - **Left Click:** Start timer
-    - **Right Click:** Switch work/rest
-    - **Shift + Click:** Reset timer
-    - **Ctrl/Cmd + Click:** Open settings
+### **PomoGame: A Productivity Game for Roam Research**
 
-- **Gamified Motivation**
-    Earn EXP for each focus session with a Dota 2-inspired ladder. Rank up from Herald to Immortal, then Prestige to earn a Crown 👑 and begin a new challenge.
+What started as a minimal Pomodoro timer has become an addictive productivity game, right in your Roam Research top bar.
 
-- **Always on Top**
-    The timer is fixed to the top bar, so it never disappears when you scroll.
-<img width="400" height="1676" alt="9766c99b503548e842e560bd3e9c6ed7" src="https://github.com/user-attachments/assets/534b2f91-ce78-4957-84e8-7c7a5d27f753" />
-<img width="400" height="896" alt="144493810c3b57538ba2619a2968ac21" src="https://github.com/user-attachments/assets/5be7aff6-47ce-4153-8aef-f313d1641fc2" />
-<img width="400" height="1574" alt="39c85ca79350007544c05979330959d1" src="https://github.com/user-attachments/assets/345e297e-895b-4007-856a-3238e23a3ef4" />
-<img width="400" height="1706" alt="6fd8d65d2236611bd4143d0054721ce4" src="https://github.com/user-attachments/assets/aaa7e801-488f-4b47-919f-df1a4daad490" />
+It's built on a simple loop: turn your focus into a currency, then risk it for glory.
 
-## How to Use
-1.  Install the extension from the Roam Depot.
-2.  The PomoGame timer will appear in the top bar.
-3.  Use the simple controls above to manage your focus sessions.
+### The Gameplay
+
+* **Earn Coins:** 1 minute of focus = 1 coin.
+* **Climb the Ranks:** Use coins to rank up from **Herald** to **Immortal**, inspired by the DOTA 2 ladder.
+* **Prestige for Glory:** Reach Immortal to earn a permanent **Crown 👑** and reset your journey, adding immense replayability.
+* **Roll the Dice:** Risk your coins on a high-stakes 1d8 dice roll with symmetrical multipliers from **-4x** to **+4x**. Your rank can rise or fall with a single roll.
+* **Track Your Luck:** Analyze your performance with a "stock chart" style trend graph of all your rolls.
+
+### Why PomoGame?
+
+The timer is **always visible** in your top bar, unlike the native Roam Pomodoro which disappears when you scroll. It's a simple fix that makes a huge difference.
+
+### Controls
+
+* **Left Click:** Start Timer
+* **Right Click:** Switch Work/Rest
+* **Shift + Click:** Reset Timer
+* **Ctrl/Cmd + Click:** Open Settings Panel
+
+### Installation
+
+Currently being submitted to the Roam Depot. The installation URL will be updated here as soon as it is approved.
