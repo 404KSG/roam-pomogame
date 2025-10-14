@@ -3,6 +3,8 @@
 What started as a minimal Pomodoro timer has become an addictive productivity game, right in your Roam Research top bar.
 
 It's built on a simple loop: turn your focus into a currency, then risk it for glory.
+<img width="200" height="1504" alt="CleanShot 2025-10-14 at 13 56 37@2x" src="https://github.com/user-attachments/assets/6aef9198-8b88-422b-80b2-6117aafc162b" />
+<img width="200" height="1256" alt="CleanShot 2025-10-14 at 13 56 50@2x" src="https://github.com/user-attachments/assets/5df21ef8-d850-440d-adf3-7350378d2762" />
 
 ### The Gameplay
 
