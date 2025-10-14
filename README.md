@@ -1,9 +1,3 @@
-Of course. You've provided the perfect raw material. Here is a lean, powerful, and exciting `README.md` based on the essential points from your description.
-
-This version gets straight to the point, highlighting the unique "game" aspects that make your extension special.
-
----
-
 ### **PomoGame: A Productivity Game for Roam Research**
 
 What started as a minimal Pomodoro timer has become an addictive productivity game, right in your Roam Research top bar.
@@ -28,7 +22,3 @@ The timer is **always visible** in your top bar, unlike the native Roam Pomodoro
 * **Right Click:** Switch Work/Rest
 * **Shift + Click:** Reset Timer
 * **Ctrl/Cmd + Click:** Open Settings Panel
-
-### Installation
-
-Currently being submitted to the Roam Depot. The installation URL will be updated here as soon as it is approved.
