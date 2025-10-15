@@ -7,6 +7,7 @@
   'use strict';
 
   let lastRollResult = null;
+  let settingsModalRef = null;
 
   const ID = 'rr-pomobar';
   const STYLE_ID = `${ID}-style`;
@@ -23,6 +24,7 @@
   const COLOR_HOVER_BG = '#EEF2F7';
   const COLOR_BORDER   = '#E3E7EE';
   const COLOR_PROGRESS = '#9BB1FF';
+  const COLOR_PROGRESS_GRADIENT = 'linear-gradient(90deg, #dbe4ff 0%, #9bb1ff 48%, #6f88ff 100%)';
   const COLOR_PILL_BG  = '#D7DBE3';
   const COLOR_PILL_TXT = '#2F3A46';
 
@@ -88,7 +90,7 @@
 
   function injectStyles(){
     if (document.getElementById(STYLE_ID)) return;
-    const css = `
+  const css = `
 #${ID}{
   position: relative; top: 1px;
   display:inline-flex; align-items:center; gap:${SPACE.gap}px;
@@ -158,11 +160,39 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
 }
 
 .rank-pill{
-  width:100%; border-radius:9999px; background:${COLOR_PILL_BG};
-  color:${COLOR_PILL_TXT}; font-weight:800; padding:8px 12px;
-  display:flex; align-items:center; gap:8px;
+  width:100%;
+  border-radius:9999px;
+  background:${COLOR_PILL_BG};
+  color:${COLOR_PILL_TXT};
+  font-weight:800;
+  padding:8px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  white-space:nowrap;
 }
 .rank-pill .star{ color:#F4B400; }
+.rank-pill__icon{
+  font-size:24px;
+  line-height:1;
+  display:inline-flex;
+}
+.rank-pill__text{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:${COLOR_PILL_TXT};
+  font-weight:800;
+}
+.rank-pill__text b{
+  font-weight:900;
+}
+.rank-pill__stars{
+  color:#F4B400;
+  font-size:15px;
+  margin-left:6px;
+}
 
 .kv{ margin-top:10px; }
 .kv-line{
@@ -173,7 +203,13 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
 .kv-line .kv-val{ color:#4A5868; font-weight:700; }
 
 .prog{ height:12px; border-radius:9999px; background:#E9EDF5; position:relative; overflow:hidden; margin-top:8px; }
-.prog>span{ position:absolute; left:0; top:0; bottom:0; width:0%; background:${COLOR_PROGRESS}; transition:width .25s ease; }
+.prog>span{
+  position:absolute; left:0; top:0; bottom:0; width:0%;
+  background:${COLOR_PROGRESS};
+  background-image:${COLOR_PROGRESS_GRADIENT};
+  background-size:100% 100%; background-repeat:no-repeat;
+  transition:width .25s ease;
+}
 
 .ladder{ width:100%; border-collapse:collapse; font-size:14px; }
 .ladder th, .ladder td{ padding:6px 8px; border-bottom:1px dashed ${COLOR_BORDER}; text-align:center; white-space:nowrap; }
@@ -216,13 +252,15 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
 .log-loss { color: #b02a37; font-weight:700; }
 
 .roll-chart-container { margin-bottom: 12px; }
-.roll-chart-container h5 { font-size: 13px; text-align: center; margin: 0 0 4px; color: ${COLOR_WORK}; }
+.roll-chart-container h5 { font-size: 13px; text-align: center; margin: 0 0 4px; color: ${COLOR_WORK}; font-weight: 700; }
 .roll-chart-svg { width: 100%; height: 120px; background: #FBFCFF; border: 1px solid ${COLOR_BORDER}; border-radius: 8px; }
 .roll-chart-svg .grid { stroke: ${COLOR_BORDER}; stroke-dasharray: 2, 2; }
 .roll-chart-svg .axis { stroke: ${COLOR_PILL_BG}; stroke-width: 2; }
 .roll-chart-svg .line { stroke: ${COLOR_PROGRESS}; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .roll-chart-svg .label { font-size: 10px; fill: ${COLOR_WORK}; opacity: 0.75; }
 .roll-chart-svg .zero-line { stroke: ${COLOR_BREAK}; stroke-width: 1.5; }
+.roll-chart-svg .empty { fill: ${COLOR_WORK}; opacity: 0.45; font-size: 12px; }
+
 `;
     const s = document.createElement('style');
     s.id = STYLE_ID; s.textContent = css;
@@ -310,6 +348,58 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
     return false;
   }
 
+  function rankLabel(info){
+    if (!info) return '';
+    return `${info.name}${info.star ? ` ${ROMAN[info.star - 1]}` : ''}`;
+  }
+
+  function renderRankPill(rankInfo, labelText){
+    const label = labelText || 'Current Rank';
+    const rankKey = rankInfo ? `${rankInfo.name}:${rankInfo.star || 0}` : 'none';
+    return `
+      <div class="rank-pill" data-rank-key="${rankKey}" data-role="rank-pill">
+        <span class="rank-pill__icon">${(rankInfo && EMO[rankInfo.name]) || '🏆'}</span>
+        <span class="rank-pill__text">${label}:&nbsp;<b>${rankLabel(rankInfo)}</b></span>
+        <span class="star rank-pill__stars">${(rankInfo && rankInfo.star) ? '★'.repeat(rankInfo.star) : '★'}</span>
+      </div>
+    `;
+  }
+
+  function refreshSettingsModal(){
+    if (!settingsModalRef) return;
+    const mask = settingsModalRef.el;
+    if (!mask || !document.body.contains(mask)) { settingsModalRef = null; return; }
+    const modalRoot = mask.querySelector('.rr-modal');
+    if (!modalRoot) { settingsModalRef = null; return; }
+
+    const rank = computeRank(S.points);
+    const percent = Math.round((rank.progress || 0) * 100);
+    const totalCoinsEl = modalRoot.querySelector('[data-role="total-coins"]');
+    if (totalCoinsEl) totalCoinsEl.textContent = S.points;
+    const progressTextEl = modalRoot.querySelector('[data-role="progress-text"]');
+    if (progressTextEl) progressTextEl.innerHTML = rank.next ? `<b>${S.points - rank.base}</b> / ${rank.next - rank.base} 🪙 coins` : '∞';
+    const progressBarEl = modalRoot.querySelector('[data-role="progress-bar"]');
+    if (progressBarEl) progressBarEl.style.width = `${percent}%`;
+    const rankPillSlot = modalRoot.querySelector('[data-role="rank-pill-slot"]');
+    if (rankPillSlot) rankPillSlot.innerHTML = renderRankPill(rank, 'Current Rank');
+    const prestigeRow = modalRoot.querySelector('[data-role="prestige-row"]');
+    if (prestigeRow) prestigeRow.style.display = S.points >= IMMORTAL_MIN ? '' : 'none';
+    const immortalCountEl = modalRoot.querySelector('[data-role="immortal-count"]');
+    if (immortalCountEl) immortalCountEl.textContent = S.immortalResets || 0;
+    const betInput = modalRoot.querySelector('#rr-bet');
+    if (betInput) {
+      betInput.max = String(S.points);
+      const current = parseInt(betInput.value, 10);
+      if (isFinite(current) && current > S.points) {
+        betInput.value = S.points > 0 ? String(S.points) : '';
+      }
+      if (!betInput.value && S.points <= 0) {
+        const stored = betInput.dataset.originalPlaceholder;
+        if (stored && betInput !== document.activeElement) betInput.placeholder = stored;
+      }
+    }
+  }
+
   function openSettings(){
     const rank = computeRank(S.points);
     const percent = Math.round( (rank.progress || 0) * 100 );
@@ -319,7 +409,7 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
     if (lastRollResult) {
         const { roll, change } = lastRollResult;
         if (change >= 0) {
-            resultHtml = `<div class="roll-result win">You rolled a ${roll}! You won ${change} coins.</div>`;
+            resultHtml = `<div class="roll-result win">🎉 You rolled a ${roll}! You won ${change} coins.</div>`;
         } else {
             resultHtml = `<div class="roll-result loss">You rolled a ${roll}... You lost ${-change} coins.</div>`;
         }
@@ -344,30 +434,26 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
             </div>
           </div>
 
-          <div class="card">
+          <div class="card" data-role="achievements-card">
             <h4>🏆 Achievements</h4>
-            <div class="rank-pill">
-              <span>${EMO[rank.name]||'🏆'}</span>
-              <span>Current Rank:&nbsp;<b>${rank.name}${rank.star?(' '+ROMAN[rank.star-1]):''}</b></span>
-              <span class="star" style="margin-left:6px;">${rank.star?('★'.repeat(rank.star)):'★'}</span>
-            </div>
+            <div data-role="rank-pill-slot">${renderRankPill(rank, 'Current Rank')}</div>
             <div class="kv">
-              <div class="kv-line"><span>Total (👑 x${S.immortalResets||0}):</span><span class="kv-val"><b>${S.points}</b> 🪙 coins</span></div>
-              <div class="kv-line"><span>Progress to next</span><span class="kv-val">${rank.next ? `<b>${S.points - rank.base}</b> / ${rank.next - rank.base} 🪙 coins` : '∞'}</span></div>
+              <div class="kv-line"><span>Total 👑 x<span data-role="immortal-count">${S.immortalResets||0}</span> :</span><span class="kv-val"><b data-role="total-coins">${S.points}</b> 🪙 coins</span></div>
+              <div class="kv-line"><span>Progress to next</span><span class="kv-val" data-role="progress-text">${rank.next ? `<b>${S.points - rank.base}</b> / ${rank.next - rank.base} 🪙 coins` : '∞'}</span></div>
             </div>
-            <div class="prog"><span style="width:${percent}%"></span></div>
-            <div class="kv-line" style="${canPrestige?'':'display:none;'}; margin-top:8px;">
+            <div class="prog"><span data-role="progress-bar" style="width:${percent}%"></span></div>
+            <div class="kv-line" data-role="prestige-row" style="${canPrestige?'':'display:none;'}; margin-top:8px;">
               <span class="text-muted" style="font-size:12px;">Become Immortal to unlock Prestige.</span>
-              <button class="rr-btn" data-action="prestige" style="background:#F5C76C; color:#3a2a00; font-size:14px; padding:6px 10px;">Prestige for a Crown 👑</button>
+              <button class="rr-btn" data-action="prestige" style="background:#F5C76C; color:#3a2a00; font-size:14px; padding:6px 10px; font-weight:700;">Prestige for a Crown 👑</button>
             </div>
           </div>
 
           <div class="card">
-            <h4>🎲 Roll the Dice</h4>
+            <h4>🎲 Roll for Coins</h4>
             <div class="text-muted" style="font-size:12px; margin:0 0 12px;">Risk your coins for a chance to win big!</div>
             <div class="row" style="justify-content:center;">
               <input id="rr-bet" type="number" placeholder="Enter your bet" min="1" max="${S.points}" step="1">
-              <button class="rr-btn primary" data-action="roll" style="width:140px;">Roll!</button>
+              <button class="rr-btn primary" data-action="roll" style="width:140px;">Roll</button>
             </div>
             <a href="#" class="view-log-btn" data-action="view-log">View More</a>
           </div>
@@ -386,6 +472,12 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
     lastRollResult = null;
 
     const root = m.el;
+    const originalClose = m.close;
+    m.close = () => {
+      if (settingsModalRef && settingsModalRef.el === m.el) settingsModalRef = null;
+      originalClose();
+    };
+    settingsModalRef = m;
 
     // MOD: Helper function to manage focus/blur for numeric inputs
     const setupNumericInputBehavior = (inputElement) => {
@@ -408,8 +500,19 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
 
     // MOD: Add focus/blur events to the bet input placeholder
     const betInput = root.querySelector('#rr-bet');
+    const resetBetInputState = () => {
+        if (!betInput) return;
+        betInput.value = '';
+        betInput.style.borderColor = '';
+        const original = betInput.dataset.originalPlaceholder;
+        if (original) {
+            betInput.placeholder = original;
+        }
+        betInput.blur();
+    };
     if (betInput) {
         const originalPlaceholder = betInput.placeholder;
+        betInput.dataset.originalPlaceholder = originalPlaceholder;
         betInput.addEventListener('focus', () => {
             betInput.placeholder = '';
         });
@@ -418,6 +521,9 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
                 betInput.placeholder = originalPlaceholder;
             }
         });
+        if (S.points <= 0) {
+            betInput.value = '';
+        }
     }
 
     root.addEventListener('click',(e)=>{
@@ -433,10 +539,10 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
         save(); m.close(); setUI(secOfPhase()); return;
       }
       if(act==='prestige' && S.points >= IMMORTAL_MIN){
-        const prev = S.points;
         S.immortalResets = (S.immortalResets||0) + 1;
-        S.points = 0; save();
-        if (didLevelUp(prev, S.points)) levelUpSfx();
+        const remainder = Math.max(0, S.points - IMMORTAL_MIN);
+        S.points = remainder;
+        save();
         m.close(); openSettings();
       }
       if(act==='view-log') {
@@ -448,7 +554,11 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
       if (act === 'roll') {
         const bet = parseInt(betInput.value, 10);
         if (!isFinite(bet) || bet <= 0) { betInput.style.borderColor = 'red'; return; }
-        if (bet > S.points) { alert('You cannot bet more coins than you have.'); betInput.style.borderColor = 'red'; return; }
+        if (bet > S.points) {
+            alert('You cannot bet more coins than you have.');
+            resetBetInputState();
+            return;
+        }
         betInput.style.borderColor = '';
 
         const prevPoints = S.points;
@@ -475,11 +585,8 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
   }
 
   function renderChart(log) {
-    if (!log || log.length < 2) {
-        return `<div class="text-muted" style="text-align:center; padding: 20px 0;">Not enough data for a chart. (Min 2 rolls)</div>`;
-    }
-
-    const data = log.slice().reverse().map(entry => LEVERAGE[entry.roll]);
+    const safeLog = Array.isArray(log) ? log : [];
+    const data = safeLog.slice().reverse().map(entry => LEVERAGE[entry.roll]);
     const width = 500;
     const height = 100;
     const padding = { top: 10, right: 30, bottom: 10, left: 30 };
@@ -488,19 +595,25 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
     const minVal = -4;
     const maxVal = 4;
     const range = maxVal - minVal;
-
-    const getX = (i) => padding.left + (i / (data.length - 1)) * chartWidth;
+    const hasLine = data.length >= 2;
+    const xCount = hasLine ? data.length : Math.max(2, safeLog.length || 8);
+    const denom = Math.max(1, xCount - 1);
+    const getX = (i) => padding.left + (i / denom) * chartWidth;
     const getY = (val) => padding.top + chartHeight - ((val - minVal) / range) * chartHeight;
 
-    const points = data.map((val, i) => `${getX(i)},${getY(val)}`).join(' ');
-    const xGridLines = data.map((_, i) => `<line class="grid" x1="${getX(i)}" y1="${padding.top}" x2="${getX(i)}" y2="${height - padding.bottom}"></line>`).join('');
+    const points = hasLine ? data.map((val, i) => `${getX(i)},${getY(val)}`).join(' ') : '';
+    const xGridLines = Array.from({length: xCount}, (_, i) => `<line class="grid" x1="${getX(i)}" y1="${padding.top}" x2="${getX(i)}" y2="${height - padding.bottom}"></line>`).join('');
+    const emptyBaseline = getY(0) + 18;
+    const emptyY = Math.min(height - padding.bottom - 4, emptyBaseline);
+    const emptyText = hasLine ? '' : `<text class="empty" x="50%" y="${emptyY}" text-anchor="middle" dominant-baseline="middle">Roll to start the trend</text>`;
 
     return `
         <svg class="roll-chart-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">
             ${xGridLines}
             <line class="zero-line" x1="${padding.left}" y1="${getY(0)}" x2="${width - padding.right}" y2="${getY(0)}"></line>
             <line class="axis" x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}"></line>
-            <polyline class="line" points="${points}"></polyline>
+            ${hasLine ? `<polyline class="line" points="${points}"></polyline>` : ''}
+            ${emptyText}
             <text class="label" x="${padding.left - 8}" y="${padding.top + 3}" text-anchor="end">+4x</text>
             <text class="label" x="${padding.left - 8}" y="${getY(2) + 3}" text-anchor="end">+2x</text>
             <text class="label" x="${padding.left - 8}" y="${getY(0) + 3}" text-anchor="end">0x</text>
@@ -550,6 +663,7 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
             </div>
         </div>
         <div class="rr-btns">
+            <button class="rr-btn" data-action="close-log">Close</button>
             <button class="rr-btn primary" data-action="back-to-settings">Back</button>
         </div>
     `);
@@ -558,6 +672,10 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
         const btn = e.target.closest('[data-action]');
         if (!btn) { if (e.target === m.el) m.close(); return; }
         const act = btn.getAttribute('data-action');
+        if (act === 'close-log') {
+            m.close();
+            return;
+        }
         if (act === 'back-to-settings') {
             m.close();
             openSettings();
@@ -584,20 +702,16 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
       <div class="rr-head">🪙 +${gained} coins</div>
       <div class="rr-body">
         <div class="card">
-          <div class="rank-pill">
-            <span>${EMO[rank.name]||'🏆'}</span>
-            <span>Now:&nbsp;<b>${rank.name}${rank.star?(' '+ROMAN[rank.star-1]):''}</b></span>
-            <span class="star" style="margin-left:6px;">${rank.star?('★'.repeat(rank.star)):'★'}</span>
-          </div>
+          ${renderRankPill(rank, 'Now')}
           <div class="kv">
-            <div class="kv-line"><span>Total (👑 x${S.immortalResets||0}):</span><span class="kv-val"><b>${S.points}</b> 🪙 coins</span></div>
+            <div class="kv-line"><span>Total 👑 x${S.immortalResets||0} :</span><span class="kv-val"><b>${S.points}</b> 🪙 coins</span></div>
             <div class="kv-line"><span>Progress to next</span><span class="kv-val">${rank.next ? `<b>${S.points - rank.base}</b> / ${rank.next - rank.base} 🪙 coins` : '∞'}</span></div>
           </div>
           <div class="prog"><span style="width:${pct}%"></span></div>
         </div>
       </div>
       <div class="rr-btns" style="justify-content:flex-end;">
-        ${canPrestige ? '<button class="rr-btn" data-action="prestige">Prestige (+1 👑)</button>' : ''}
+        ${canPrestige ? '<button class="rr-btn" data-action="prestige" style="font-weight:700;">Prestige (+1 👑)</button>' : ''}
         <button class="rr-btn" data-action="snooze">Snooze (+5 min)</button>
         ${primaryButtonHtml}
         <button class="rr-btn" data-action="open-settings">Setting</button>
@@ -620,10 +734,10 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
         S.remainingSec = 5 * 60;
         start(false);
       } else if(act==='prestige' && S.points >= IMMORTAL_MIN){
-        const prev = S.points;
         S.immortalResets = (S.immortalResets||0) + 1;
-        S.points = 0; save();
-        if (didLevelUp(prev, S.points)) levelUpSfx();
+        const remainder = Math.max(0, S.points - IMMORTAL_MIN);
+        S.points = remainder;
+        save();
         m.close(); openSettings(); return;
       }
       save(); m.close(); setUI(Math.max(0, Math.ceil((S.endAt ? (S.endAt-Date.now())/1000 : S.remainingSec ?? secOfPhase()))));
@@ -651,10 +765,13 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
         }
         S.points = prevPoints + gained;
         beep3();
-        if (didLevelUp(prevPoints, S.points)) levelUpSfx();
+        if (didLevelUp(prevPoints, S.points)) {
+          levelUpSfx();
+        }
 
         S.overrideDurationMin = null;
         save();
+        refreshSettingsModal();
 
         if (phaseThatJustEnded === 'work') {
             S.phase = 'break';
