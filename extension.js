@@ -400,6 +400,10 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
     }
   }
 
+  // ===================================================================
+  // ==                *** 代码修改从这里开始 *** ==
+  // ===================================================================
+
   function openSettings(){
     const rank = computeRank(S.points);
     const percent = Math.round( (rank.progress || 0) * 100 );
@@ -414,6 +418,9 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
             resultHtml = `<div class="roll-result loss">You rolled a ${roll}... You lost ${-change} coins.</div>`;
         }
     }
+
+    // --- 修复点：皇冠样式改为 1.4em 并移除对齐 ---
+    const crownStyle = `font-size: 1.4em; line-height: 1;`;
 
     const m = modal(`
       <div class="rr-head">PomoGame Settings</div>
@@ -438,13 +445,13 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
             <h4>🏆 Achievements</h4>
             <div data-role="rank-pill-slot">${renderRankPill(rank, 'Current Rank')}</div>
             <div class="kv">
-              <div class="kv-line"><span>Total 👑 x<span data-role="immortal-count">${S.immortalResets||0}</span> :</span><span class="kv-val"><b data-role="total-coins">${S.points}</b> 🪙 coins</span></div>
+              <div class="kv-line"><span>Total <span style="${crownStyle}">👑</span> x<span data-role="immortal-count">${S.immortalResets||0}</span> :</span><span class="kv-val"><b data-role="total-coins">${S.points}</b> 🪙 coins</span></div>
               <div class="kv-line"><span>Progress to next</span><span class="kv-val" data-role="progress-text">${rank.next ? `<b>${S.points - rank.base}</b> / ${rank.next - rank.base} 🪙 coins` : '∞'}</span></div>
             </div>
             <div class="prog"><span data-role="progress-bar" style="width:${percent}%"></span></div>
             <div class="kv-line" data-role="prestige-row" style="${canPrestige?'':'display:none;'}; margin-top:8px;">
               <span class="text-muted" style="font-size:12px;">Become Immortal to unlock Prestige.</span>
-              <button class="rr-btn" data-action="prestige" style="background:#F5C76C; color:#3a2a00; font-size:14px; padding:6px 10px; font-weight:700;">Prestige for a Crown 👑</button>
+              <button class="rr-btn" data-action="prestige" style="background:#F5C76C; color:#3a2a00; font-size:14px; padding:6px 10px; font-weight:700;">Prestige for a Crown <span style="${crownStyle}">👑</span></button>
             </div>
           </div>
 
@@ -692,26 +699,50 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
     return html;
   }
 
+  // ===================================================================
+  // ==                *** 代码修改从这里开始 *** ==
+  // ===================================================================
+
   function showDoneModal(gained){
     const rank = computeRank(S.points);
     const pct = Math.round((rank.progress || 0) * 100);
     const canPrestige = S.points >= IMMORTAL_MIN;
+
+    const workJustEnded = gained > 0;
+    
+    // --- 修复点：皇冠样式改为 1.4em 并移除对齐 ---
+    const crownStyle = `font-size: 1.4em; line-height: 1;`;
+
+    let modalHeadHtml = '';
+    if (workJustEnded) {
+      // "Work Complete" 和 "Coins" 标题栏
+      modalHeadHtml = `
+        <div class="rr-head" style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding-left: 18px; padding-right: 18px;">
+          <span style="justify-self: start; font-size:16px; font-weight:700;">Work Complete</span>
+          <span style="justify-self: center; font-weight: 700; color: ${COLOR_BREAK}; font-size: 16px;">🪙 +${gained} coins</span>
+          <span></span>
+        </div>`;
+    } else {
+      // "Break Over" 标题栏 (恢复左侧对齐)
+      modalHeadHtml = `<div class="rr-head">Break Over</div>`;
+    }
+
     const primaryButtonHtml = `<button class="rr-btn primary" data-action="switch-to-work">Start Work</button>`;
 
     const m = modal(`
-      <div class="rr-head">🪙 +${gained} coins</div>
+      ${modalHeadHtml}
       <div class="rr-body">
         <div class="card">
           ${renderRankPill(rank, 'Now')}
           <div class="kv">
-            <div class="kv-line"><span>Total 👑 x${S.immortalResets||0} :</span><span class="kv-val"><b>${S.points}</b> 🪙 coins</span></div>
+            <div class="kv-line"><span>Total <span style="${crownStyle}">👑</span> x${S.immortalResets||0} :</span><span class="kv-val"><b>${S.points}</b> 🪙 coins</span></div>
             <div class="kv-line"><span>Progress to next</span><span class="kv-val">${rank.next ? `<b>${S.points - rank.base}</b> / ${rank.next - rank.base} 🪙 coins` : '∞'}</span></div>
           </div>
           <div class="prog"><span style="width:${pct}%"></span></div>
         </div>
       </div>
       <div class="rr-btns" style="justify-content:flex-end;">
-        ${canPrestige ? '<button class="rr-btn" data-action="prestige" style="font-weight:700;">Prestige (+1 👑)</button>' : ''}
+        ${canPrestige ? `<button class="rr-btn" data-action="prestige" style="font-weight:700;">Prestige (+1 <span style="${crownStyle}">👑</span>)</button>` : ''}
         <button class="rr-btn" data-action="snooze">Snooze (+5 min)</button>
         ${primaryButtonHtml}
         <button class="rr-btn" data-action="open-settings">Setting</button>
@@ -730,9 +761,10 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
           S.phase = 'work';
           start(true);
       } else if(act==='snooze'){
-        S.overrideDurationMin = 5;
-        S.remainingSec = 5 * 60;
-        start(false);
+          S.phase = 'work'; 
+          S.overrideDurationMin = 5;
+          S.remainingSec = 5 * 60;
+          start(false);
       } else if(act==='prestige' && S.points >= IMMORTAL_MIN){
         S.immortalResets = (S.immortalResets||0) + 1;
         const remainder = Math.max(0, S.points - IMMORTAL_MIN);
@@ -743,6 +775,11 @@ input[type=number]::-webkit-inner-spin-button{ -webkit-appearance: none; margin:
       save(); m.close(); setUI(Math.max(0, Math.ceil((S.endAt ? (S.endAt-Date.now())/1000 : S.remainingSec ?? secOfPhase()))));
     }, {once:false});
   }
+
+  // ===================================================================
+  // ==                *** 代码修改在这里结束 *** ==
+  // ===================================================================
+
 
   function tick(){
     injectStyles(); mount();
